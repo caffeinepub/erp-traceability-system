@@ -1,19 +1,34 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useNavigate } from "@tanstack/react-router";
-import { BarChart3, Layers, QrCode, Shield } from "lucide-react";
+import { BarChart3, Eye, EyeOff, Layers, QrCode, Shield } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../lib/auth";
 
 export default function LoginPage() {
-  const { isLoggedIn, isInitializing, isLoggingIn, login } = useAuth();
+  const { isLoggedIn, login } = useAuth();
   const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!isInitializing && isLoggedIn) {
+    if (isLoggedIn) {
       navigate({ to: "/" });
     }
-  }, [isLoggedIn, isInitializing, navigate]);
+  }, [isLoggedIn, navigate]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    const success = login(username, password);
+    if (!success) {
+      setError("Invalid username or password. Please try again.");
+    }
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -55,7 +70,7 @@ export default function LoginPage() {
               {
                 icon: Shield,
                 title: "Role-Based Access",
-                desc: "Admin and user roles with controlled permissions",
+                desc: "Master and Level 1 roles with controlled permissions",
               },
               {
                 icon: Layers,
@@ -108,33 +123,71 @@ export default function LoginPage() {
           </p>
 
           <div className="mt-8 rounded-xl border bg-card p-6 shadow-card">
-            <div className="mb-6 text-center">
-              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-                <Shield className="h-7 w-7 text-primary" />
-              </div>
-              <h3 className="text-sm font-semibold text-foreground">
-                Internet Identity Login
-              </h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Secure, passwordless authentication
-              </p>
-            </div>
-
-            <Button
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={login}
-              disabled={isLoggingIn}
-              data-ocid="login.primary_button"
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-4"
+              data-ocid="login.dialog"
             >
-              {isLoggingIn ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Signing In...
-                </>
-              ) : (
-                "Sign In with Internet Identity"
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="username"
+                  required
+                  data-ocid="login.input"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                    className="pr-10"
+                    data-ocid="login.textarea"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <p
+                  className="text-sm text-destructive"
+                  data-ocid="login.error_state"
+                >
+                  {error}
+                </p>
               )}
-            </Button>
+
+              <Button
+                type="submit"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                data-ocid="login.primary_button"
+              >
+                Sign In
+              </Button>
+            </form>
           </div>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">

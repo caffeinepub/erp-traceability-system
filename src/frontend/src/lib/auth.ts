@@ -1,34 +1,31 @@
-import { useQuery } from "@tanstack/react-query";
-import { useActor } from "../hooks/useActor";
-import { useInternetIdentity } from "../hooks/useInternetIdentity";
+import { useState } from "react";
+import { clearSession, getSession, login as localLogin } from "./localAuth";
 
 export function useAuth() {
-  const { identity, login, clear, loginStatus, isInitializing, isLoggingIn } =
-    useInternetIdentity();
-  const { actor, isFetching } = useActor();
+  const [session, setSession] = useState(getSession());
 
-  const isLoggedIn = !!identity && !identity.getPrincipal().isAnonymous();
+  const login = (username: string, password: string): boolean => {
+    const s = localLogin(username, password);
+    if (s) {
+      setSession(s);
+      return true;
+    }
+    return false;
+  };
 
-  const adminQuery = useQuery({
-    queryKey: ["isAdmin", identity?.getPrincipal().toString()],
-    queryFn: async () => {
-      if (!actor || !isLoggedIn) return false;
-      return actor.isCallerAdmin();
-    },
-    enabled: !!actor && !isFetching && isLoggedIn,
-    staleTime: 30_000,
-  });
+  const logout = () => {
+    clearSession();
+    setSession(null);
+  };
 
   return {
-    identity,
+    isLoggedIn: !!session,
+    isAdmin: session?.role === "admin",
+    isInitializing: false,
+    username: session?.username ?? null,
+    role: session?.role ?? null,
     login,
-    logout: clear,
-    loginStatus,
-    isInitializing,
-    isLoggingIn,
-    isLoggedIn,
-    isAdmin: adminQuery.data ?? false,
-    isAdminLoading: adminQuery.isLoading,
-    principal: identity?.getPrincipal().toString(),
+    logout,
+    isLoggingIn: false,
   };
 }

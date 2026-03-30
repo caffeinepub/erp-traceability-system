@@ -12,7 +12,7 @@ import {
   LogOut,
   PackageSearch,
   Printer,
-  Settings,
+  Users,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect } from "react";
@@ -34,34 +34,39 @@ const navItems = [
   },
   { to: "/print", label: "Label Print", icon: Printer, adminOnly: false },
   { to: "/history", label: "Label History", icon: History, adminOnly: true },
+  {
+    to: "/admin/users",
+    label: "User Management",
+    icon: Users,
+    adminOnly: true,
+  },
 ];
 
+const PAGE_LABELS: Record<string, string> = {
+  "/": "Dashboard",
+  "/admin/materials": "Material Master",
+  "/admin/users": "User Management",
+  "/entry": "Material Entry",
+  "/history": "Label History",
+  "/print": "Label Print",
+};
+
 export default function Layout() {
-  const { isLoggedIn, isInitializing, isAdmin, principal, logout } = useAuth();
+  const { isLoggedIn, isAdmin, username, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (!isInitializing && !isLoggedIn) {
+    if (!isLoggedIn) {
       navigate({ to: "/login" });
     }
-  }, [isLoggedIn, isInitializing, navigate]);
-
-  if (isInitializing) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Initializing...</p>
-        </div>
-      </div>
-    );
-  }
+  }, [isLoggedIn, navigate]);
 
   if (!isLoggedIn) return null;
 
   const visibleNav = navItems.filter((item) => !item.adminOnly || isAdmin);
-  const initials = principal ? principal.slice(0, 2).toUpperCase() : "U";
+  const initials = username ? username.slice(0, 2).toUpperCase() : "U";
+  const roleLabel = isAdmin ? "Master" : "Level 1";
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -130,7 +135,7 @@ export default function Layout() {
             </Avatar>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium text-sidebar-foreground">
-                {principal ? `${principal.slice(0, 12)}...` : "Guest"}
+                {username ?? "Guest"}
               </p>
               <Badge
                 variant="outline"
@@ -140,7 +145,7 @@ export default function Layout() {
                     : "border-sidebar-foreground/30 text-sidebar-foreground/60"
                 }`}
               >
-                {isAdmin ? "Admin" : "User"}
+                {roleLabel}
               </Badge>
             </div>
             <Button
@@ -162,15 +167,7 @@ export default function Layout() {
         <header className="no-print flex h-14 flex-shrink-0 items-center justify-between border-b bg-card px-6 shadow-xs">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              {location.pathname === "/"
-                ? "Dashboard"
-                : location.pathname === "/admin/materials"
-                  ? "Material Master"
-                  : location.pathname === "/entry"
-                    ? "Material Entry"
-                    : location.pathname === "/history"
-                      ? "Label History"
-                      : ""}
+              {PAGE_LABELS[location.pathname] ?? ""}
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -181,7 +178,7 @@ export default function Layout() {
                   : "bg-muted text-muted-foreground"
               }`}
             >
-              {isAdmin ? "Admin" : "User"}
+              {roleLabel}
             </Badge>
           </div>
         </header>

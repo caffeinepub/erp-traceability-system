@@ -5,7 +5,6 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
-  redirect,
 } from "@tanstack/react-router";
 import Layout from "./components/Layout";
 import DashboardPage from "./pages/DashboardPage";
@@ -14,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import MaterialEntryPage from "./pages/MaterialEntryPage";
 import PrintPage from "./pages/PrintPage";
 import MaterialMasterPage from "./pages/admin/MaterialMasterPage";
+import UserManagementPage from "./pages/admin/UserManagementPage";
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -48,6 +48,12 @@ const adminMaterialsRoute = createRoute({
   component: MaterialMasterPage,
 });
 
+const adminUsersRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: "/admin/users",
+  component: UserManagementPage,
+});
+
 const entryRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: "/entry",
@@ -71,6 +77,7 @@ const routeTree = rootRoute.addChildren([
   layoutRoute.addChildren([
     indexRoute,
     adminMaterialsRoute,
+    adminUsersRoute,
     entryRoute,
     historyRoute,
   ]),
