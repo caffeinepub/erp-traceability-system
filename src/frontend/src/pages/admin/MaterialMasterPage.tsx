@@ -29,6 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Download,
   Loader2,
   Pencil,
   Plus,
@@ -66,6 +67,24 @@ const empty: FormState = {
   quantity: "",
 };
 
+function downloadTemplate() {
+  const headers = [
+    "Material Code",
+    "Material Description",
+    "Material Weight",
+    "Min Weight",
+    "Max Weight",
+    "Quantity",
+  ];
+  const sampleRow = ["MAT-001", "Sample Material", 10.5, 9.0, 12.0, 100];
+  const ws = XLSX.utils.aoa_to_sheet([headers, sampleRow]);
+  // Set column widths
+  ws["!cols"] = headers.map(() => ({ wch: 20 }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Material Master");
+  XLSX.writeFile(wb, "Material_Master_Template.xlsx");
+}
+
 export default function MaterialMasterPage() {
   const { isAdmin } = useAuth();
   const { data: materials, isLoading } = useAllMaterials();
@@ -78,6 +97,7 @@ export default function MaterialMasterPage() {
   const [form, setForm] = useState<FormState>(empty);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const updateFileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isAdmin) {
     return (
@@ -159,8 +179,9 @@ export default function MaterialMasterPage() {
       toast.success(editTarget ? "Material updated" : "Material added");
       setDialogOpen(false);
       setForm(empty);
-    } catch {
-      toast.error("Failed to save material");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to save material: ${msg}`);
     }
   }
 
@@ -175,7 +196,10 @@ export default function MaterialMasterPage() {
     }
   }
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileUpload(
+    e: React.ChangeEvent<HTMLInputElement>,
+    closeDialogAfter = false,
+  ) {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
@@ -215,10 +239,13 @@ export default function MaterialMasterPage() {
 
       await bulkImport.mutateAsync(valid);
       toast.success(`Imported ${valid.length} materials`);
-    } catch {
-      toast.error("Failed to parse Excel file");
+      if (closeDialogAfter) setDialogOpen(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to parse Excel file: ${msg}`);
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
+      if (updateFileInputRef.current) updateFileInputRef.current.value = "";
     }
   }
 
@@ -239,8 +266,17 @@ export default function MaterialMasterPage() {
             type="file"
             accept=".xlsx,.csv"
             className="hidden"
-            onChange={handleFileUpload}
+            onChange={(e) => handleFileUpload(e)}
           />
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={downloadTemplate}
+            data-ocid="materials.download_template_button"
+          >
+            <Download className="h-4 w-4" />
+            Download Template
+          </Button>
           <Button
             variant="outline"
             className="gap-2"
@@ -253,7 +289,7 @@ export default function MaterialMasterPage() {
             ) : (
               <Upload className="h-4 w-4" />
             )}
-            Upload Excel (XLSX/CSV)
+            Upload Excel
           </Button>
           <Button
             className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
@@ -270,7 +306,14 @@ export default function MaterialMasterPage() {
       <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-xs text-blue-700">
         <span className="font-semibold">Excel column headers required:</span>{" "}
         Material Code, Material Description, Material Weight, Min Weight, Max
-        Weight, Quantity
+        Weight, Quantity &nbsp;|&nbsp;
+        <button
+          type="button"
+          onClick={downloadTemplate}
+          className="underline font-medium hover:text-blue-900"
+        >
+          Download blank template
+        </button>
       </div>
 
       {/* Table */}
@@ -396,6 +439,48 @@ export default function MaterialMasterPage() {
               {editTarget ? "Edit Material" : "Add New Material"}
             </DialogTitle>
           </DialogHeader>
+
+          {/* Excel upload option inside dialog */}
+          <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/20 px-4 py-3">
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Or import from Excel template:
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                ref={updateFileInputRef}
+                type="file"
+                accept=".xlsx,.csv"
+                className="hidden"
+                onChange={(e) => handleFileUpload(e, true)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={() => updateFileInputRef.current?.click()}
+                disabled={bulkImport.isPending}
+              >
+                {bulkImport.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Upload className="h-3.5 w-3.5" />
+                )}
+                Upload Excel (XLSX/CSV)
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-xs text-muted-foreground"
+                onClick={downloadTemplate}
+              >
+                <Download className="h-3.5 w-3.5" />
+                Download Template
+              </Button>
+            </div>
+          </div>
+
           <div className="grid gap-4 py-2">
             <div className="space-y-1.5">
               <Label htmlFor="mat-code">Material Code</Label>

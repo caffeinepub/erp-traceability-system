@@ -9,7 +9,6 @@ import Int "mo:core/Int";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import AccessControl "authorization/access-control";
-import MixinAuthorization "authorization/MixinAuthorization";
 
 actor {
   type Material = {
@@ -51,13 +50,18 @@ actor {
     };
   };
 
+  // Migration: explicitly accept and discard the old accessControlState stable variable
+  stable var accessControlState : AccessControl.AccessControlState = AccessControl.initState();
+
+  system func postupgrade() {
+    // discard the old accessControlState after upgrade
+    accessControlState := AccessControl.initState();
+  };
+
   let materials = Map.empty<Text, Material>();
   let labelLogs = Map.empty<Text, [LabelLog]>();
 
-  let accessControlState = AccessControl.initState();
-  include MixinAuthorization(accessControlState);
-
-  public shared ({ caller }) func addOrUpdateMaterial(
+  public shared func addOrUpdateMaterial(
     code : Text,
     description : Text,
     weight : Float,
@@ -65,9 +69,6 @@ actor {
     maxWeight : Float,
     quantity : Nat,
   ) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Only admins can add or update materials");
-    };
     if (minWeight > maxWeight) {
       Runtime.trap("minWeight cannot be greater than maxWeight");
     };
@@ -91,21 +92,13 @@ actor {
     materials.values().toArray().sort();
   };
 
-  public shared ({ caller }) func bulkImportMaterials(materialsArray : [Material]) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Only admins can bulk import materials");
-    };
-
+  public shared func bulkImportMaterials(materialsArray : [Material]) : async () {
     for (material in materialsArray.values()) {
       materials.add(material.code, material);
     };
   };
 
-  public shared ({ caller }) func deleteMaterial(code : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Only admins can delete materials");
-    };
-
+  public shared func deleteMaterial(code : Text) : async () {
     if (not materials.containsKey(code)) {
       Runtime.trap("Material with code " # code # " does not exist");
     };
@@ -113,10 +106,6 @@ actor {
   };
 
   public shared ({ caller }) func generateLabel(materialCode : Text, actualWeight : Float) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can generate labels");
-    };
-
     switch (materials.get(materialCode)) {
       case (null) { Runtime.trap("Material not found") };
       case (?material) {
@@ -148,38 +137,22 @@ actor {
     };
   };
 
-  public query ({ caller }) func getAllLabelLogs() : async [LabelLog] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Only admins can view all label logs");
-    };
-
+  public query func getAllLabelLogs() : async [LabelLog] {
     labelLogs.values().toArray().flatten().sort();
   };
 
-  public query ({ caller }) func getMaterialLabelLogs(materialCode : Text) : async [LabelLog] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Only admins can view label logs");
-    };
-
+  public query func getMaterialLabelLogs(materialCode : Text) : async [LabelLog] {
     switch (labelLogs.get(materialCode)) {
       case (?logs) { logs };
       case (null) { [] };
     };
   };
 
-  public shared ({ caller }) func clearAllMaterials() : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Only admins can clear all materials");
-    };
-
+  public shared func clearAllMaterials() : async () {
     materials.clear();
   };
 
-  public shared ({ caller }) func clearAllLabelLogs() : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Only admins can clear all label logs");
-    };
-
+  public shared func clearAllLabelLogs() : async () {
     labelLogs.clear();
   };
 };
