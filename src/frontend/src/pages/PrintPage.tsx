@@ -22,6 +22,7 @@ export default function PrintPage() {
   const [data, setData] = useState<PrintData | null>(null);
   const [timestamp] = useState(() => new Date().toISOString());
   const loggedRef = useRef(false);
+  const printedRef = useRef(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("printData");
@@ -49,6 +50,17 @@ export default function PrintPage() {
         .catch(() => toast.error("Failed to log label"));
     }
   }, [data, generateLabel]);
+
+  // Auto-trigger print dialog once data is loaded
+  useEffect(() => {
+    if (data && !printedRef.current) {
+      printedRef.current = true;
+      const timer = setTimeout(() => {
+        window.print();
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [data]);
 
   if (!data) {
     return (
@@ -123,7 +135,7 @@ export default function PrintPage() {
             }}
           >
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
-              ERP Traceability System
+              Essae Digitronics Pvt. Ltd.
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-wide">
               {data.code}
