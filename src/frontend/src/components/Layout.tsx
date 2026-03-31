@@ -66,7 +66,7 @@ export default function Layout() {
 
   const visibleNav = navItems.filter((item) => !item.adminOnly || isAdmin);
   const initials = username ? username.slice(0, 2).toUpperCase() : "U";
-  const roleLabel = isAdmin ? "Master" : "Level 1";
+  const roleLabel = isAdmin ? "Admin" : "Level 1";
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -75,13 +75,19 @@ export default function Layout() {
         className="no-print flex w-64 flex-shrink-0 flex-col"
         style={{
           background:
-            "linear-gradient(180deg, oklch(0.20 0.047 230) 0%, oklch(0.18 0.045 228) 100%)",
+            "linear-gradient(180deg, oklch(0.15 0.01 80) 0%, oklch(0.13 0.01 80) 100%)",
         }}
       >
         {/* Brand */}
         <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <BarChart3 className="h-5 w-5 text-white" />
+          <div
+            className="flex h-9 w-9 items-center justify-center rounded-lg"
+            style={{ background: "oklch(0.70 0.18 65)" }}
+          >
+            <BarChart3
+              className="h-5 w-5"
+              style={{ color: "oklch(0.13 0.01 80)" }}
+            />
           </div>
           <div>
             <p className="text-sm font-bold text-sidebar-foreground">
@@ -141,7 +147,7 @@ export default function Layout() {
                 variant="outline"
                 className={`mt-0.5 h-4 px-1.5 text-[10px] ${
                   isAdmin
-                    ? "border-primary/50 text-primary"
+                    ? "border-amber-400/50 text-amber-400"
                     : "border-sidebar-foreground/30 text-sidebar-foreground/60"
                 }`}
               >

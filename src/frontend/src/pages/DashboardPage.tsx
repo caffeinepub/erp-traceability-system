@@ -21,8 +21,8 @@ export default function DashboardPage() {
       title: "Total Materials",
       value: totalMaterials,
       icon: Package,
-      accent: "#2563eb",
-      bg: "#eff6ff",
+      accent: "#D97706",
+      bg: "#fffbeb",
       loading: mLoading,
     },
     {
@@ -37,8 +37,8 @@ export default function DashboardPage() {
       title: "Total Quantity",
       value: totalQuantity,
       icon: Layers,
-      accent: "#d97706",
-      bg: "#fffbeb",
+      accent: "#b45309",
+      bg: "#fef3c7",
       loading: mLoading,
     },
     {
@@ -55,26 +55,29 @@ export default function DashboardPage() {
     <div data-ocid="dashboard.page" className="space-y-6">
       {/* Hero Banner */}
       <div
-        className="relative overflow-hidden rounded-2xl px-8 py-7 text-white"
+        className="relative overflow-hidden rounded-2xl px-8 py-7"
         style={{
           background:
-            "linear-gradient(135deg, #0f2c4a 0%, #1a4a7a 50%, #1e5fa8 100%)",
+            "linear-gradient(135deg, #1C1917 0%, #292524 50%, #44403C 100%)",
         }}
       >
         <div
           className="pointer-events-none absolute inset-0 opacity-10"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 80% 20%, #60a5fa 0%, transparent 50%)",
+              "radial-gradient(circle at 80% 20%, #fbbf24 0%, transparent 50%)",
           }}
         />
-        <p className="text-xs font-semibold uppercase tracking-widest text-blue-200">
+        <p className="text-xs font-semibold uppercase tracking-widest text-amber-300">
           Welcome to
         </p>
-        <h1 className="mt-1 text-2xl font-extrabold tracking-tight">
+        <h1
+          className="mt-1 text-2xl font-extrabold tracking-tight"
+          style={{ color: "#DC2626" }}
+        >
           Essae Digitronics Pvt. Ltd.
         </h1>
-        <p className="mt-1 text-sm text-blue-100/80">
+        <p className="mt-1 text-sm text-amber-100/80">
           ERP Traceability System &mdash; Material Master & Label Management
         </p>
       </div>
@@ -121,8 +124,8 @@ export default function DashboardPage() {
           <CardContent className="flex flex-col gap-3">
             <Link to="/entry">
               <Button
-                className="w-full justify-start gap-2"
-                style={{ background: "#1a4a7a" }}
+                className="w-full justify-start gap-2 text-white"
+                style={{ background: "#D97706" }}
                 data-ocid="dashboard.entry.primary_button"
               >
                 <Layers className="h-4 w-4" />
@@ -133,7 +136,7 @@ export default function DashboardPage() {
               <Link to="/admin/materials">
                 <Button
                   variant="outline"
-                  className="w-full justify-start gap-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+                  className="w-full justify-start gap-2 border-amber-200 text-amber-700 hover:bg-amber-50"
                   data-ocid="dashboard.materials.secondary_button"
                 >
                   <Package className="h-4 w-4" />
@@ -162,12 +165,12 @@ export default function DashboardPage() {
                 {materials.slice(0, 5).map((m) => (
                   <li
                     key={m.code}
-                    className="flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2"
+                    className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2"
                   >
-                    <span className="text-sm font-semibold text-blue-800">
+                    <span className="text-sm font-semibold text-amber-800">
                       {m.code}
                     </span>
-                    <span className="text-xs text-blue-500">
+                    <span className="text-xs text-amber-500">
                       {m.description}
                     </span>
                   </li>

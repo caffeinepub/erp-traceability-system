@@ -128,16 +128,19 @@ export default function PrintPage() {
         >
           {/* Header */}
           <div
-            className="px-6 py-4 text-center text-white"
+            className="px-6 py-4 text-center"
             style={{
               background:
-                "linear-gradient(135deg, oklch(0.20 0.047 230) 0%, oklch(0.30 0.08 250) 100%)",
+                "linear-gradient(135deg, oklch(0.15 0.01 80) 0%, oklch(0.25 0.02 80) 100%)",
             }}
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+            <p
+              className="text-xs font-bold uppercase tracking-[0.2em]"
+              style={{ color: "#DC2626" }}
+            >
               Essae Digitronics Pvt. Ltd.
             </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-wide">
+            <h1 className="mt-1 text-2xl font-bold tracking-wide text-white">
               {data.code}
             </h1>
           </div>
@@ -162,9 +165,9 @@ export default function PrintPage() {
                       {data.standardWeight} kg
                     </p>
                   </div>
-                  <div className="rounded-lg bg-primary/10 p-2.5">
-                    <p className="text-xs text-primary">Actual Weight</p>
-                    <p className="mt-0.5 text-sm font-bold text-primary">
+                  <div className="rounded-lg bg-amber-50 p-2.5">
+                    <p className="text-xs text-amber-700">Actual Weight</p>
+                    <p className="mt-0.5 text-sm font-bold text-amber-700">
                       {data.actualWeight} kg
                     </p>
                   </div>
